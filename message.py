@@ -9,18 +9,11 @@
 #  & evilet <mail@markusschader.de>
 ################################################################################
 """
-VERSION="0.2"
-
-
 import time
 import sys
 
+VERSION="0.2"
 LEVELS = ['debug', 'info', 'warning', 'error', 'quiet']
-
-def timestamp ():
-    """return timestamp string in choosen format"""
-    global tform
-    return time.strftime(tform)
 
 
 class Message:
@@ -50,7 +43,7 @@ class Message:
             self.print_level = "debug"
 
         if logfile == "" and log_level != "quiet":
-            self.file_path = "~/message_log_" + timestamp().replace(" ", "_")
+            self.file_path = "~/message_log_" + self.__timestamp().replace(" ", "_")
             no_file = True
         else:
             self.file_path = logfile
@@ -83,8 +76,6 @@ class Message:
         """build message"""
 
         # build message string
-        message = "[" + mlevel.upper().center(7) + "] :: "
-
         if message_source:
             message_source = "** {} **".format(message_source)
         else:
@@ -105,7 +96,7 @@ class Message:
         """print message to stdout or stderr"""
 
         if self.print_time:
-            message = "{} {}".format(self.timestamp(), message)
+            message = "{} {}".format(self.__timestamp(), message)
 
         if message_level in ["error", "warning"] or self.stderr:
             sys.stderr.write(message)
@@ -113,13 +104,13 @@ class Message:
             sys.stdout.write(message)
 
 
-    def __log_output(message):
+    def __log_output(self, message):
         """write message to logfile"""
 
-        message = "{} {}".format(self.timestamp(), message)
+        message = "{} {}".format(self.__timestamp(), message)
         # try to access log
         try:
-            with open(self.log, "a") as f:
+            with open(self.file_path, "a") as f:
                 f.write(message)
         except IOError as e:
             self.log_level = "quiet"
@@ -129,23 +120,27 @@ class Message:
     def __levelcheck (self, message_level, level):
         """compare message level to print- or loglevel"""
 
-        if LEVELS.index(message_level) <= LEVELS.index(level):
+        if LEVELS.index(message_level) >= LEVELS.index(level):
             return True
         else:
             return False
 
-    def error(message, message_source=None
+    def __timestamp(self):
+        """return timestamp string in choosen format"""
+        return time.strftime(self.timeformat)
+
+    def error(self, message, message_source=None):
         """print/log error message"""
         self.__build( "error", message, message_source);
 
-    def warning(message, message_type=None):
+    def warning(self, message, message_type=None):
         """print/log warning message"""
         self.__build( "warning", message, message_type);
 
-    def info(message, message_type=None):
+    def info(self, message, message_type=None):
         """print/log info message"""
         self.__build( "info", message, message_type);
 
-    def debug(message, message_type=None):
+    def debug(self, message, message_type=None):
         """print/log debug message"""
         self.__build( "debug", message, message_type);
