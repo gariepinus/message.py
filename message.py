@@ -5,14 +5,17 @@
 #   [Output and log management]
 #
 # by gariepinus <mail@gariepinus.de>
+#  & fleaz <mail@fleaz.me>
+#  & evilet <mail@markusschader.de>
 ################################################################################
 """
-version="0.1"
+VERSION="0.2"
 
 
 import time
 import sys
 
+LEVELS = ['debug', 'info', 'warning', 'error', 'quiet']
 
 def timestamp ():
     """return timestamp string in choosen format"""
@@ -20,171 +23,129 @@ def timestamp ():
     return time.strftime(tform)
 
 
-class message:
-    def __init__ (self,logfile = "", printlevel = "debug", loglevel = "info", timeformat = "%Y-%m-%d %H:%M:%S", stderror = False, time = False):
+class Message:
+
+    def __init__(self,logfile = "", print_level = "debug", loglevel = "info", timeformat = "%Y-%m-%d %H:%M:%S", stderror = False, print_time = False):
         """setup message.py, check if given values are valid, check if log accessible"""
 
-        self.levels = set(['debug', 'info', 'warning', 'error', 'quiet'])
-
-        self.tform  = timeformat
+        self.timeformat = timeformat
         self.stderr = stderror
-        self.ptime  = time
+        self.print_time = time
 
-        logerror   = False
-        printerror = False
-        nofile     = False
+        log_error = False
+        print_error = False
+        no_file = False
 
 
-        if (loglevel in levels):
-            self.logl  = loglevel
+        if loglevel in LEVELS:
+            self.log_level  = loglevel
         else:
-            logerror = True
-            self.logl = "info"
+            log_error = True
+            self.log_level = "debug"
 
-
-        if (printlevel in levels):
-            self.printl = printlevel
+        if print_level in LEVELS:
+            self.print_level = print_level
         else:
-            printerror = True
-            self.logl = "debug"
+            print_error = True
+            self.print_level = "debug"
 
-        
-        if (logfile == "" and logl != "quiet"):
-            self.log = "~/message_log_" + timestamp().replace(" ", "_")
-            nofile = True
+        if logfile == "" and log_level != "quiet":
+            self.file_path = "~/message_log_" + timestamp().replace(" ", "_")
+            no_file = True
         else:
-            self.log = logfile
+            self.file_path = logfile
 
 
-        ### if loglevel is not quiet: make sure log can be written ###
-        if (self.logl != "quiet"):
-
-            # set loglevel to quiet for now
-            loglsave = self.logl
-            self.logl     = "quiet"
-            logfail  = False
-
-
-            # warn if loglevel was not valid
-            if (logerror):
-                self.warning("<" + loglevel + "> is unkown loglevel. Defaulting to <info>.","message.py")
-
-            # inform if default log is beeing used
-            if (nofile):
-                self.warning("No logfile path. Defaulting to <" + log + ">","message.py")
-
+        # if loglevel is not quiet: make sure log can be written
+        if self.log_level != "quiet":
 
             # try to access log
             try:
-                f = open(self.log, "a")
+                f = open(self.file_path, "a")
                 f.close()
             except IOError as e:
-                self.error("Logfile <" + self.log +  "> not accessible. Switching to loglevel <quiet>.","message.py")
-                logfail = True
+                self.log_level = "quiet"
+                self.error("Logfile <{}> not accessible. Switching to loglevel <quiet>.".format(self.file_path), "message.py")
+
+            # warn if loglevel was not valid
+            if log_error:
+                self.warning("Unkown loglevel. Defaulting to <info>.", "message.py")
+
+            # inform if default logfile is beeing used
+            if no_file:
+                self.warning("No logfile path. Defaulting to <{}>".format(self.file_path), "message.py")
+
+        if print_error:
+            self.warning("<{}> is unkown printlevel. Defaulting to <debug>.".format(print_level), "message.py")
 
 
-            if not (logfail):
-                # if log is accessible, restore saved loglevel
-                self.logl = loglsave
-
-
-            if (printerror):
-                warning("<" + printlevel + "> is unkown printlevel. Defaulting to <debug>.","message.py")
-        
-        return 0
-
-
-    def build ( mlevel, message, msgtype=""):
+    def __build(self, message_level, message_text, message_source=None):
         """build message"""
 
-        # check if message has valid level
-        if not (mlevel in self.levels):
-            error("Unkown message level: <" + mlevel + "> for <" + message +">.", "message.py")
-            return 1
-
-
         # build message string
-        msg = "[" + mlevel.upper().center(7) + "] :: "
+        message = "[" + mlevel.upper().center(7) + "] :: "
 
-        if (msgtype != ""):
-            msg = msg + "**" + msgtype + "** " 
+        if message_source:
+            message_source = "** {} **".format(message_source)
+        else:
+            message_source = ""
 
-            msg =  msg + message + "\n"
+        message = "[{: ^7}] {} {}\n".format(message_level.upper(), message_source, message_text)
 
+        # print message if printlevel not quiet and >= message level
+        if self.print_level != "quiet" and self.__levelcheck(message_level, self.print_level):
+            self.__print_output(message_level, message)
 
-            # print message if printlevel not quiet and >= message level
-            if (printl != "quiet" and levelcheck(mlevel, printl)):
-                output( mlevel, msg)
-
-            # write message to log if loglevel not quiet and >= message level
-            if (logl != "quiet" and levelcheck(mlevel, logl)):
-                logwrite(msg)
-
-        return 0
-
+        # write message to log if loglevel not quiet and >= message level
+        if self.log_level != "quiet" and self.__levelcheck(message_level, self.log_level):
+            self.__log_output(message)
 
 
-    def output(mlevel, message):
+    def __print_output(self, message_level, message):
         """print message to stdout or stderr"""
 
-        if (ptime):
-            message = self.timestamp()+ " " + message
+        if self.print_time:
+            message = "{} {}".format(self.timestamp(), message)
 
-        if (mlevel == "error" or mlevel == "warning" or self.stderr):
+        if message_level in ["error", "warning"] or self.stderr:
             sys.stderr.write(message)
         else:
             sys.stdout.write(message)
 
 
-    def logwrite(message):
+    def __log_output(message):
         """write message to logfile"""
 
-        message = timestamp() + " " + message
-
+        message = "{} {}".format(self.timestamp(), message)
         # try to access log
         try:
-            f = open(self.log, "a")
-            f.write(message)
-            f.close()
+            with open(self.log, "a") as f:
+                f.write(message)
         except IOError as e:
-            self.logl = "quiet"
-            error("Logfile <" + self.log +  "> not accessible. Switching to loglevel <quiet>.","message.py")
-
-        return 0
+            self.log_level = "quiet"
+            error("Logfile <{}> not accessible. Switching to loglevel <quiet>.".format(self.file_path),"message.py")
 
 
-
-    def levelcheck (mlevel, level):
+    def __levelcheck (self, message_level, level):
         """compare message level to print- or loglevel"""
 
-        if (level == "debug"):
+        if LEVELS.index(message_level) <= LEVELS.index(level):
             return True
-        if (level == "info" and mlevel != "debug"):
-            return True
-        if (level == "warn" and mlevel != "debug" and mlevel != "info"):
-            return True
-        if (level == "error" and mlevel == "error"):
-            return True
+        else:
+            return False
 
-        return False
-
-
-
-    def error(message, mtype=""):
+    def error(message, message_source=None
         """print/log error message"""
-        seldbuild( "error", message, mtype);
+        self.__build( "error", message, message_source);
 
-
-    def warning(message, mtype=""):
+    def warning(message, message_type=None):
         """print/log warning message"""
-        build( "warning", message, mtype);
+        self.__build( "warning", message, message_type);
 
+    def info(message, message_type=None):
+        """print/log info message"""
+        self.__build( "info", message, message_type);
 
-def info(message, mtype=""):
-    """print/log info message"""
-    build( "info", message, mtype);
-
-
-def debug(message, mtype=""):
-    """print/log debug message"""
-    build( "debug", message, mtype);
+    def debug(message, message_type=None):
+        """print/log debug message"""
+        self.__build( "debug", message, message_type);
