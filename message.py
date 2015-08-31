@@ -43,7 +43,7 @@ class Message:
             self.print_level = "debug"
 
         if logfile == "" and self.log_level != "quiet":
-            self.file_path = "~/message_log_" + self.__timestamp().replace(" ", "_")
+            self.file_path = "./message_log_" + self.__timestamp().replace(" ", "_")
             no_file = True
         else:
             self.file_path = logfile
