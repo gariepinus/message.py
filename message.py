@@ -42,7 +42,7 @@ class Message:
             print_error = True
             self.print_level = "debug"
 
-        if logfile == "" and log_level != "quiet":
+        if logfile == "" and self.log_level != "quiet":
             self.file_path = "~/message_log_" + self.__timestamp().replace(" ", "_")
             no_file = True
         else:
@@ -111,7 +111,7 @@ class Message:
                 f.write(message)
         except IOError as e:
             self.log_level = "quiet"
-            error("Logfile <{}> not accessible. Switching to loglevel <quiet>.".format(self.file_path), "message.py")
+            self.error("Logfile <{}> not accessible. Switching to loglevel <quiet>.".format(self.file_path), "message.py")
 
     @staticmethod
     def __levelcheck(message_level, level):
