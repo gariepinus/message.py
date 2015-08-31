@@ -12,13 +12,14 @@
 import time
 import sys
 
-VERSION="0.2"
+VERSION = "0.2"
 LEVELS = ['debug', 'info', 'warning', 'error', 'quiet']
 
 
 class Message:
 
-    def __init__(self,logfile = "", print_level = "debug", loglevel = "info", timeformat = "%Y-%m-%d %H:%M:%S", stderror = False, print_time = False):
+    def __init__(self, logfile="", print_level="debug", loglevel="info", timeformat="%Y-%m-%d %H:%M:%S",
+                 stderror=False, print_time=False):
         """setup message.py, check if given values are valid, check if log accessible"""
 
         self.timeformat = timeformat
@@ -29,9 +30,8 @@ class Message:
         print_error = False
         no_file = False
 
-
         if loglevel in LEVELS:
-            self.log_level  = loglevel
+            self.log_level = loglevel
         else:
             log_error = True
             self.log_level = "debug"
@@ -42,12 +42,11 @@ class Message:
             print_error = True
             self.print_level = "debug"
 
-        if logfile == "" and log_level != "quiet":
+        if logfile == "" and self.log_level != "quiet":
             self.file_path = "~/message_log_" + self.__timestamp().replace(" ", "_")
             no_file = True
         else:
             self.file_path = logfile
-
 
         # if loglevel is not quiet: make sure log can be written
         if self.log_level != "quiet":
@@ -58,7 +57,8 @@ class Message:
                 f.close()
             except IOError as e:
                 self.log_level = "quiet"
-                self.error("Logfile <{}> not accessible. Switching to loglevel <quiet>.".format(self.file_path), "message.py")
+                self.error("Logfile <{}> not accessible. Switching to loglevel <quiet>.".format(self.file_path),
+                           "message.py")
 
             # warn if loglevel was not valid
             if log_error:
@@ -70,7 +70,6 @@ class Message:
 
         if print_error:
             self.warning("<{}> is unkown printlevel. Defaulting to <debug>.".format(print_level), "message.py")
-
 
     def __build(self, message_level, message_text, message_source=None):
         """build message"""
@@ -91,7 +90,6 @@ class Message:
         if self.log_level != "quiet" and self.__levelcheck(message_level, self.log_level):
             self.__log_output(message)
 
-
     def __print_output(self, message_level, message):
         """print message to stdout or stderr"""
 
@@ -103,7 +101,6 @@ class Message:
         else:
             sys.stdout.write(message)
 
-
     def __log_output(self, message):
         """write message to logfile"""
 
@@ -114,10 +111,10 @@ class Message:
                 f.write(message)
         except IOError as e:
             self.log_level = "quiet"
-            error("Logfile <{}> not accessible. Switching to loglevel <quiet>.".format(self.file_path),"message.py")
+            self.error("Logfile <{}> not accessible. Switching to loglevel <quiet>.".format(self.file_path), "message.py")
 
-
-    def __levelcheck (self, message_level, level):
+    @staticmethod
+    def __levelcheck(message_level, level):
         """compare message level to print- or loglevel"""
 
         if LEVELS.index(message_level) >= LEVELS.index(level):
@@ -131,16 +128,16 @@ class Message:
 
     def error(self, message, message_source=None):
         """print/log error message"""
-        self.__build( "error", message, message_source);
+        self.__build("error", message, message_source)
 
     def warning(self, message, message_type=None):
         """print/log warning message"""
-        self.__build( "warning", message, message_type);
+        self.__build("warning", message, message_type)
 
     def info(self, message, message_type=None):
         """print/log info message"""
-        self.__build( "info", message, message_type);
+        self.__build("info", message, message_type)
 
     def debug(self, message, message_type=None):
         """print/log debug message"""
-        self.__build( "debug", message, message_type);
+        self.__build("debug", message, message_type)
