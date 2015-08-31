@@ -18,7 +18,7 @@ LEVELS = ['debug', 'info', 'warning', 'error', 'quiet']
 
 class Message:
 
-    def __init__(self, logfile="", print_level="debug", loglevel="info", timeformat="%Y-%m-%d %H:%M:%S",
+    def __init__(self, logfile="", print_level="debug", log_level="info", timeformat="%Y-%m-%d %H:%M:%S",
                  stderror=False, print_time=False):
         """setup message.py, check if given values are valid, check if log accessible"""
 
@@ -31,7 +31,7 @@ class Message:
         no_file = False
 
         if loglevel in LEVELS:
-            self.log_level = loglevel
+            self.log_level = log_level
         else:
             log_error = True
             self.log_level = "info"
