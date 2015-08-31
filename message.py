@@ -30,7 +30,7 @@ class Message:
         print_error = False
         no_file = False
 
-        if loglevel in LEVELS:
+        if log_level in LEVELS:
             self.log_level = log_level
         else:
             log_error = True
