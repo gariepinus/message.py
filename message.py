@@ -18,23 +18,23 @@ LEVELS = ['debug', 'info', 'warning', 'error', 'quiet']
 
 class Message:
 
-    def __init__(self,logfile = "", print_level = "debug", loglevel = "info", timeformat = "%Y-%m-%d %H:%M:%S", stderror = False, print_time = False):
+    def __init__(self,logfile = "", print_level = "debug", log_level = "info", timeformat = "%Y-%m-%d %H:%M:%S", stderror = False, print_time = False):
         """setup message.py, check if given values are valid, check if log accessible"""
 
         self.timeformat = timeformat
         self.stderr = stderror
-        self.print_time = time
+        self.print_time = print_time
 
         log_error = False
         print_error = False
         no_file = False
 
 
-        if loglevel in LEVELS:
-            self.log_level  = loglevel
+        if log_level in LEVELS:
+            self.log_level  = log_level
         else:
             log_error = True
-            self.log_level = "debug"
+            self.log_level = "info"
 
         if print_level in LEVELS:
             self.print_level = print_level
@@ -43,7 +43,7 @@ class Message:
             self.print_level = "debug"
 
         if logfile == "" and log_level != "quiet":
-            self.file_path = "~/message_log_" + self.__timestamp().replace(" ", "_")
+            self.file_path = "./message_log_" + self.__timestamp().replace(" ", "_")
             no_file = True
         else:
             self.file_path = logfile
@@ -77,11 +77,11 @@ class Message:
 
         # build message string
         if message_source:
-            message_source = "** {} **".format(message_source)
+            message_source = "** {} ** ".format(message_source)
         else:
             message_source = ""
 
-        message = "[{: ^7}] {} {}\n".format(message_level.upper(), message_source, message_text)
+        message = "[{: ^7}] {}{}\n".format(message_level.upper(), message_source, message_text)
 
         # print message if printlevel not quiet and >= message level
         if self.print_level != "quiet" and self.__levelcheck(message_level, self.print_level):
@@ -133,14 +133,14 @@ class Message:
         """print/log error message"""
         self.__build( "error", message, message_source);
 
-    def warning(self, message, message_type=None):
+    def warning(self, message, message_source=None):
         """print/log warning message"""
-        self.__build( "warning", message, message_type);
+        self.__build( "warning", message, message_source);
 
-    def info(self, message, message_type=None):
+    def info(self, message, message_source=None):
         """print/log info message"""
-        self.__build( "info", message, message_type);
+        self.__build( "info", message, message_source);
 
-    def debug(self, message, message_type=None):
+    def debug(self, message, message_source=None):
         """print/log debug message"""
-        self.__build( "debug", message, message_type);
+        self.__build( "debug", message, message_source);
