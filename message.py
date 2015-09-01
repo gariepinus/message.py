@@ -66,10 +66,13 @@ class Message:
 
             # inform if default logfile is beeing used
             if no_file:
-                self.warning("No logfile path. Defaulting to <{}>".format(self.file_path), "message.py")
+                self.info("No logfile path. Defaulting to <{}>".format(self.file_path), "message.py")
 
         if print_error:
             self.warning("<{}> is unkown printlevel. Defaulting to <debug>.".format(print_level), "message.py")
+
+        self.debug("READY :: {}".format({"logfile":self.file_path,"print_level":self.print_level,
+                 "log_level":self.log_level,"timeformat":self.timeformat,"stderror":self.stderr,"print_time":self.print_time}), "message.py")
 
     def __build(self, message_level, message_text, message_source=None):
         """build message"""
