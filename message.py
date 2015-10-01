@@ -130,6 +130,15 @@ class Message:
         """return timestamp string in choosen format"""
         return time.strftime(self.timeformat)
 
+    def get_logfile_path(self):
+        return self.file_path
+
+    def get_print_level(self):
+        return self.print_level
+
+    def get_file_level(self):
+        return self.log_level
+
     def error(self, message, message_source=None):
         """print/log error message"""
         self.__build("error", message, message_source)
