@@ -136,8 +136,20 @@ class Message:
     def get_print_level(self):
         return self.print_level
 
-    def get_file_level(self):
+    def set_print_level(self, new_print_level):
+        if new_print_level in LEVELS:
+            self.print_level = new_print_level
+        else:
+            self.error("<{}> is unkown level! Leaving print_level unchanged.", "message.py".format(new_print_level))
+
+    def get_log_level(self):
         return self.log_level
+
+    def set_log_level(self, new_log_level):
+        if new_log_level in LEVELS:
+            self.log_level = new_log_level
+        else:
+            self.error("<{}> is unkown level! Leaving log_level unchanged.", "message.py".format(new_log_level))
 
     def error(self, message, message_source=None):
         """print/log error message"""
