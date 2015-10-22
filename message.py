@@ -12,7 +12,7 @@
 import time
 import sys
 
-VERSION = "0.2"
+VERSION = "0.3"
 LEVELS = ['debug', 'info', 'warning', 'error', 'quiet']
 
 
