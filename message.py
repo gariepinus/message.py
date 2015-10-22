@@ -17,7 +17,6 @@ LEVELS = ['debug', 'info', 'warning', 'error', 'quiet']
 
 
 class Message:
-
     def __init__(self, logfile="", print_level="debug", log_level="info", timeformat="%Y-%m-%d %H:%M:%S",
                  stderror=False, print_time=False):
         """setup message.py, check if given values are valid, check if log accessible"""
@@ -71,8 +70,9 @@ class Message:
         if print_error:
             self.warning("<{}> is unkown printlevel. Defaulting to <debug>.".format(print_level), "message.py")
 
-        self.debug("READY :: {}".format({"logfile":self.file_path,"print_level":self.print_level,
-                 "log_level":self.log_level,"timeformat":self.timeformat,"stderror":self.stderr,"print_time":self.print_time}), "message.py")
+        self.debug("READY :: {}".format({"logfile": self.file_path, "print_level": self.print_level,
+                                         "log_level": self.log_level, "timeformat": self.timeformat,
+                                         "stderror": self.stderr, "print_time": self.print_time}), "message.py")
 
     def __build(self, message_level, message_text, message_source=None):
         """build message"""
@@ -114,7 +114,8 @@ class Message:
                 f.write(message)
         except IOError as e:
             self.log_level = "quiet"
-            self.error("Logfile <{}> not accessible. Switching to loglevel <quiet>.".format(self.file_path), "message.py")
+            self.error("Logfile <{}> not accessible. Switching to loglevel <quiet>.".format(self.file_path),
+                       "message.py")
 
     @staticmethod
     def __levelcheck(message_level, level):
@@ -129,20 +130,41 @@ class Message:
         """return timestamp string in choosen format"""
         return time.strftime(self.timeformat)
 
+    def get_logfile_path(self):
+        return self.file_path
+
+    def get_print_level(self):
+        return self.print_level
+
+    def set_print_level(self, new_print_level):
+        if new_print_level in LEVELS:
+            self.print_level = new_print_level
+        else:
+            self.error("<{}> is unkown level! Leaving print_level unchanged.", "message.py".format(new_print_level))
+
+    def get_log_level(self):
+        return self.log_level
+
+    def set_log_level(self, new_log_level):
+        if new_log_level in LEVELS:
+            self.log_level = new_log_level
+        else:
+            self.error("<{}> is unkown level! Leaving log_level unchanged.", "message.py".format(new_log_level))
+
     def error(self, message, message_source=None):
         """print/log error message"""
         self.__build("error", message, message_source)
 
     def warning(self, message, message_source=None):
         """print/log warning message"""
-        self.__build( "warning", message, message_source);
+        self.__build("warning", message, message_source);
 
     def info(self, message, message_source=None):
         """print/log info message"""
-        self.__build( "info", message, message_source);
+        self.__build("info", message, message_source);
 
     def debug(self, message, message_source=None):
         """print/log debug message"""
-        self.__build( "debug", message, message_source);
+        self.__build("debug", message, message_source);
 
 ## eof
